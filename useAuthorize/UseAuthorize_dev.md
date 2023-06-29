@@ -90,7 +90,7 @@ In the example above, the `Profile` component uses the `useAuthorize` and `useUs
 
 ## Contributing
 
-If you find any issues or have suggestions for improvements, please open an issue or submit a pull request on the GitHub repository of the `AuthorizationProvider` component.
+If you find any bugs, have feature suggestions, or would like to contribute to the `AuthorizationProvider` component, please visit the [GitHub repository](https://github.com/paradoxmr24/libraries) to submit an issue or pull request.
 
 ## License
 
