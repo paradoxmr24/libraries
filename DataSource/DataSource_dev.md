@@ -24,7 +24,7 @@ class DataSource {
     static MODE_FIND = 0;
     static MODE_AGGREGATE = 1;
 
-    constructor(Model, query, filtersAllowed = []) {
+    constructor(Model, config) {
         // ...
     }
 
@@ -44,13 +44,11 @@ class DataSource {
 The constructor of the `DataSource` class initializes an instance of the class with the provided parameters.
 
 ```javascript
-constructor(Model, query, filtersAllowed = []) {
-    // query params
+constructor(Model, config) {
+    // query config params
     // pageSize = 20, page = 1, srtBy, direction = 1, searchBy = 'name', search
     this.Model = Model;
-    this.query = query;
-    this.filtersAllowed = filtersAllowed;
-    this.queryFilters = {};
+    this.config = config;
 
     this.setQueryParams();
 }
@@ -59,14 +57,13 @@ constructor(Model, query, filtersAllowed = []) {
 #### Parameters
 
 -   `Model` (Mongoose Model): The Mongoose model representing the collection to query.
--   `query` (Object): An object containing query parameters such as `pageSize`, `page`, `sortBy`, `direction`, `searchBy`, and `search`.
--   `filtersAllowed` (Array): An optional array of filter names allowed for querying.
+-   `config` (Object): An object containing query configurations such as `pageSize`, `page`, `sortBy`, `direction`, `searchBy`, and `search`.
 
 ### Private Methods
 
 #### setQueryParams
 
-The `setQueryParams` method is a private method that extracts and sets query parameters from the `query` object.
+The `setQueryParams` method is a private method that extracts and sets query configurations from the `query` object.
 
 ```javascript
 setQueryParams() {
@@ -76,7 +73,7 @@ setQueryParams() {
 
 #### getMatchQueries(stages)
 
-The `getMatchQueries` method is a private method that filters and returns an array of match queries from an array of stages.
+The `getMatchQueries` method is a private method that filters and returns an array of match queries from an array of stages (Aggregation Stages).
 
 ```javascript
 getMatchQueries(stages) {
@@ -86,7 +83,7 @@ getMatchQueries(stages) {
 
 #### setPageData(response, mode)
 
-The `setPageData` method is a private method that sets page-related data based on the provided response and mode.
+The `setPageData` method is a private method that sets page-related data based on the provided response (from mongoose) and mode.
 
 ```javascript
 async setPageData(response, mode) {
@@ -96,7 +93,7 @@ async setPageData(response, mode) {
 
 #### getTotalCount(matchQueries)
 
-The `getTotalCount` method is a private method that calculates and returns the total count of documents based on the provided match queries.
+The `getTotalCount` method is a private method that calculates and returns the total count of documents based on the provided match queries, this method is used when the query mode is `MODE_FIND`.
 
 ```javascript
 async getTotalCount(matchQueries) {
@@ -108,7 +105,7 @@ async getTotalCount(matchQueries) {
 
 #### find(filters)
 
-The `find` method performs a find operation on the MongoDB collection using the specified mongo filters and query parameters.
+The `find` method performs a find operation on the MongoDB collection using the specified mongo filters and query configurations.
 
 ```javascript
 async find(filters) {
@@ -118,11 +115,11 @@ async find(filters) {
 
 #### Parameters
 
--   `filters` (Object): An object containing additional filters to be applied to the find operation.
+-   `filters` (Object): An object filters to be applied to the find operation.
 
 #### Returns
 
--   Returns an array of documents matching the specified filters and query parameters.
+-   Returns an array of documents matching the specified filters and query filters.
 
 #### aggregate(stages)
 
@@ -155,18 +152,14 @@ import DataSource from './DataSource';
 const Contact = require('./models/Contact');
 
 // Create a new instance of DataSource
-const dataSource = new DataSource(
-    Contact,
-    {
-        pageSize: 10,
-        page: 1,
-        sortBy: 'name',
-        direction: 1,
-        searchBy: 'name',
-        search: 'John',
-    },
-    ['status', 'category']
-);
+const dataSource = new DataSource(Contact, {
+    pageSize: 10,
+    page: 1,
+    sortBy: 'name',
+    direction: 1,
+    searchBy: 'name',
+    search: 'John',
+});
 
 // Perform a find operation
 const results = await dataSource.find({ category: 'Work' });
@@ -179,7 +172,7 @@ const pipeline = [
 const aggregatedData = await dataSource.aggregate(pipeline);
 ```
 
-This example demonstrates how to create an instance of the `DataSource` class, set query parameters, and perform find and aggregate operations on a Mongoose model. You can customize the query parameters, filters, and stages based on your application's requirements.
+This example demonstrates how to create an instance of the `DataSource` class, set config, and perform find and aggregate operations on a Mongoose model. You can customize the config, filters, and stages based on your application's requirements.
 
 Note: The above example assumes that the necessary dependencies and models are properly imported and set up.
 

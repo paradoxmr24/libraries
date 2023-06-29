@@ -1,16 +1,12 @@
-// Terminologies
-// query filter: filters provided from the query
 class DataSource {
     static MODE_FIND = 0;
     static MODE_AGGREGATE = 1;
 
-    constructor(Model, query, filtersAllowed = []) {
-        // query params
-        // pageSize = 20, page = 1, srtBy, direction = 1, searchBy = 'name', search
+    constructor(Model, config) {
+        // query config params
+        // pageSize = 20, page = 1, sortBy, direction = 1, searchBy = 'name', search
         this.Model = Model;
-        this.query = query;
-        this.filtersAllowed = filtersAllowed;
-        this.queryFilters = {};
+        this.config = config;
 
         this.setQueryParams();
     }
@@ -24,18 +20,16 @@ class DataSource {
             direction = 1,
             searchBy = 'name',
             search,
-        } = this.query;
+        } = this.config;
 
-        // filter the query filters to allow only the properties that are allowed by `filtersAllowed` array
-
-        this.filtersAllowed.forEach(filterName => {
-            const value = this.query[filterName];
-            if (typeof value !== 'undefined') {
-                this.queryFilters[filterName] = this.query[filterName];
-            }
-        });
-
-        this.query = { pageSize, page, sortBy, direction, searchBy, search };
+        this.config = {
+            pageSize,
+            page,
+            sortBy,
+            direction,
+            searchBy,
+            search,
+        };
     }
 
     getMatchQueries(stages) {
@@ -48,7 +42,7 @@ class DataSource {
     async setPageData(response, mode) {
         // Mode is either aggregate or find
         // Response may contain the response from mongoose query in case find calls it or it will contain an array of $match queries in case of aggregate queries
-        const { pageSize = 20, page = 1 } = this.query;
+        const { pageSize = 20, page = 1 } = this.config;
         let totalCount = 0;
 
         if (mode === DataSource.MODE_FIND) {
@@ -82,18 +76,15 @@ class DataSource {
         // This method performs a find operation on the MongoDB collection using the specified mongo filters and query parameters.
 
         const { pageSize, page, sortBy, direction, searchBy, search } =
-            this.query;
-
-        // `allFilters` is a collection of query filters and mongo filters
-        const allFilters = { ...this.queryFilters, ...filters };
+            this.config;
 
         if (search) {
-            allFilters[searchBy] = new RegExp(search, 'i');
+            filters[searchBy] = new RegExp(search, 'i');
         }
 
         const finalStage = [
             {
-                $match: allFilters,
+                $match: filters,
             },
             {
                 $sort: {
@@ -143,7 +134,7 @@ class DataSource {
 
     async aggregate(stages) {
         const { pageSize, page, sortBy, direction, searchBy, search } =
-            this.query;
+            this.config;
 
         // Adding $match stage with search query added
         if (search) {
@@ -154,16 +145,13 @@ class DataSource {
             });
         }
 
-        // Creating final stage with query filters added
-        const finalStage = [{ $match: this.queryFilters }, ...stages];
-
         // Getting all stages with match queries
-        const matchQueries = this.getMatchQueries(finalStage);
+        const matchQueries = this.getMatchQueries(stages);
 
         // Setting the page data
         await this.setPageData(matchQueries, DataSource.MODE_AGGREGATE);
         // Creating mongooseQuery with all stages
-        const mongooseQuery = this.Model.aggregate(finalStage);
+        const mongooseQuery = this.Model.aggregate(stages);
 
         // implementing sort if needed
         if (sortBy) {

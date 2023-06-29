@@ -49,12 +49,11 @@ Make sure to replace `'./path/to/DataSource'` with the correct path to the `Data
 To get started with the `DataSource` class, create an instance of it by providing the necessary parameters:
 
 ```javascript
-const dataSource = new DataSource(Model, query, filtersAllowed);
+const dataSource = new DataSource(Model, config);
 ```
 
 -   `Model` (Mongoose Model): The Mongoose model representing the collection from which you want to retrieve data.
--   `query` (Object): An object containing query parameters such as `pageSize`, `page`, `sortBy`, `direction`, `searchBy`, and `search`.
--   `filtersAllowed` (Array, optional): An array of filter names allowed for querying.
+-   `config` (Object): An object containing configurations such as `pageSize`, `page`, `sortBy`, `direction`, `searchBy`, and `search`.
 
 ### Performing a Find Operation
 
@@ -65,7 +64,7 @@ const filters = { category: 'Work' };
 const results = await dataSource.find(filters);
 ```
 
--   `filters` (Object): An object containing additional filters to apply to the find operation.
+-   `filters` (Object): An object containing additional filters to apply to the find operation. It's the same as for the `find` method of the `MongooseModel`
 
 The `find` method will return an array of documents that match the specified filters and query parameters.
 
@@ -117,8 +116,6 @@ You can use the `pageData` property to implement pagination controls in your app
 
 Note: The `pageData` property is populated after executing a query using the `find` or `aggregate` methods. Ensure that you have executed a query before accessing the `pageData` property.
 
-That concludes the section on the `pageData` property of the `DataSource` class. It provides valuable information about pagination details for the executed query.
-
 ## Example Usage
 
 To illustrate the usage of the `DataSource` class, let's consider an example scenario where we have a MongoDB collection of contacts and we want to retrieve paginated and filtered results sorted by name.
@@ -129,11 +126,8 @@ Assuming you have already set up the Mongoose connection and defined a Mongoose 
 const Contact = require('./models/Contact'); // Import the Mongoose model
 const DataSource = require('./DataSource'); // Import the DataSource class
 
-// Create an instance of the DataSource class
-const dataSource = new DataSource(Contact, query, ['category', 'status']);
-
-// Define the query parameters
-const query = {
+// Define the configurations
+const config = {
     pageSize: 10,
     page: 1,
     sortBy: 'name',
@@ -143,6 +137,9 @@ const query = {
     category: 'Work',
     status: 'Active',
 };
+
+// Create an instance of the DataSource class
+const dataSource = new DataSource(Contact, config);
 
 // Perform a find operation
 const filters = { age: { $gte: 25 } };
@@ -163,19 +160,15 @@ console.log(`Total Contacts: ${totalData}`);
 console.log(`Contacts per Page: ${pageSize}`);
 ```
 
-In this example, we create an instance of the `DataSource` class, passing the `Contact` model, query parameters, and an array of allowed filters that can be applied through query being passed in second parameter. We then perform a find operation with additional filters, such as age greater than or equal to 25.
+In this example, we create an instance of the `DataSource` class, passing the `Contact` model and config. We then perform a find operation with additional filters, such as age greater than or equal to 25.
 
 After executing the query, we can access the retrieved results and the `pageData` property to display the contacts, pagination details, and total number of contacts.
 
 Feel free to customize the example code according to your specific use case and the structure of your data.
 
-That concludes the example usage section, demonstrating how to use the `DataSource` class to retrieve paginated and filtered results from a MongoDB collection.
-
 ## Summary
 
-The `DataSource` class simplifies data retrieval from a MongoDB database using Mongoose. By providing an intuitive interface for specifying query parameters, filters, and pagination, it enables you to find and aggregate
-
-data efficiently. Use the methods `find` and `aggregate` to retrieve the data you need based on your requirements.
+The `DataSource` class simplifies data retrieval from a MongoDB database using Mongoose. By providing an intuitive interface for specifying configs, filters, and pagination, it enables you to find and aggregate data efficiently. Use the methods `find` and `aggregate` to retrieve the data you need based on your requirements.
 
 Refer to the documentation comments within the `DataSource` class implementation for more detailed information on its functionalities and options.
 
