@@ -1,12 +1,20 @@
-import React from "react";
-import { useContext } from "react";
-import { Handler } from "../useForm/";
-import DefaultInput from "./../components/DefaultInput";
+import React from 'react';
+import { useContext } from 'react';
+import { Handler } from '../useForm/';
+import DefaultInput from './../components/DefaultInput';
 
-function Input(props) {
-    const { sx, name, maxLength, minLength, placeholder, type, ...rest } = props;
+function InputWrapper(props) {
     const {
-        values,
+        sx,
+        name,
+        maxLength,
+        minLength,
+        placeholder,
+        type,
+        onChange = null,
+        ...rest
+    } = props;
+    const {
         errors,
         setValues,
         onChangeHandler,
@@ -14,30 +22,21 @@ function Input(props) {
         config = {},
     } = useContext(Handler);
     const { Input = null } = config;
-    let value = values[name];
 
     let changeHandler = onChangeHandler;
-
-    if (values[name] instanceof Date) {
-        const date = values[name];
-        const year = date.getFullYear();
-        const month = (date.getMonth() + 1).toString().padStart(2, "0");
-        const day = date.getDate().toString().padStart(2, "0");
-
-        value = `${year}-${month}-${day}`;
-
-        changeHandler = e => {
+    const customOnChange =
+        onChange &&
+        (e => {
             setValues({
-                [name]: new Date(e.target.value),
+                [name]: onChange(e),
             });
-        };
-    }
+        });
 
     return React.createElement(Input || DefaultInput, {
-        value: value,
+        // value: value,
         name: name,
         type: type,
-        onChange: changeHandler,
+        onChange: customOnChange || changeHandler,
         disabled: loading,
         placeholder: placeholder,
         ...(errors[name] ? { error: true, helperText: errors[name] } : {}),
@@ -72,4 +71,4 @@ function Input(props) {
     // </>;
 }
 
-export default Input;
+export default InputWrapper;

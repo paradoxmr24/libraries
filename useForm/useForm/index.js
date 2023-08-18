@@ -8,7 +8,7 @@ import React, {
     useState,
 } from 'react';
 import { encodeData } from '../utilities';
-import axios from 'axios';
+import realAxios from 'axios';
 import { isUndefined, isDefined, validateType } from '../utilities/functions';
 import CircularProgress from '../components/CircularProgress';
 
@@ -246,6 +246,9 @@ function Form({
         // Getting axios method to use based on the method prop
         const requestMethod = getAxiosMethod(method);
         try {
+            const manuallAxios = handlers.config.axios;
+            const axios = manuallAxios || realAxios;
+
             const response = await axios({
                 url: action,
                 method: requestMethod,
@@ -316,7 +319,7 @@ function Submit(props) {
 // ------------- Utilities ------------------- //
 function getAxiosMethod(method = 'get') {
     validateType(
-        axios[method.toLowerCase()],
+        realAxios[method.toLowerCase()],
         'function',
         `method '${method}' is not supported in <Form> Component`
     );
